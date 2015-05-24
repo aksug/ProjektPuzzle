@@ -1,1 +1,1 @@
-/home/aga/uczelnia/semestr6/WykladMonograficznyProg/Projekt/13_05/ProjektPuzzle/app/build/intermediates/classes/debug
+/home/aga/uczelnia/semestr6/WykladMonograficznyProg/Projekt/20_05/ProjektPuzzle/app/build/intermediates/classes/debug
