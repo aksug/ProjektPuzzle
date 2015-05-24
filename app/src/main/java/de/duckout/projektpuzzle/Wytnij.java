@@ -5,11 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -23,6 +19,7 @@ import java.util.Random;
 public class Wytnij extends View {
 
     ArrayList<Bitmap> tab;
+    int[][] wygraneUlozenie;
 
     public int wysokoscEkranu;
     public int szerokoscEkranu;
@@ -49,9 +46,11 @@ public class Wytnij extends View {
     private float ostatecznyGoryRogPuzzla_Y;
     private int dotknietyID;
     private int wymiarBitmapy;
+    Context context;
 
     public Wytnij(Context context, int iloscPodzialow, int nr_zdjecia) {
         super(context);
+this.context = context;
 
         this.iloscPodzialow = iloscPodzialow;
         this.nr_zdjecia = nr_zdjecia;
@@ -83,7 +82,7 @@ public class Wytnij extends View {
 
 
     public void podzielObrazki(int nr_zdjecia) {
-
+        wygraneUlozenie = new int[iloscPodzialow][iloscPodzialow];
         tab = new ArrayList<>();
 
         //tutaj przycinam sobie orginalny obrazek. Jesli jest wiekszy niz ekran to go docinamy na wymiarBitmapy,wymiarBitmapy
@@ -96,9 +95,11 @@ public class Wytnij extends View {
             for (int j = 0; j < iloscPodzialow; j++) {
                 tab.add(Bitmap.createBitmap(bitmapOrginalna, j * pp, i * qq, bitmapOrginalna.getWidth() / iloscPodzialow, bitmapOrginalna.getHeight() / iloscPodzialow));
                 obrazki[i][j] = tab.size() - 1; // od razu w odpowiednim miejscu wrzucamy indeks wlasnie dodanego puzzla do arraylisty
+                wygraneUlozenie[i][j]= tab.size() - 1;
             }
         }
         obrazki[iloscPodzialow - 1][iloscPodzialow - 1] = -1;  //ostatniego obrazka nie chcemy rysowac tylko zznaczyc ze jest pusty czyli jako indeks wstawiamy -1
+        wygraneUlozenie[iloscPodzialow - 1][iloscPodzialow - 1] = -1;
         mieszaj();
     }
 
@@ -190,7 +191,7 @@ public class Wytnij extends View {
     }
 
 
-    public void aktualizujPolozeniePuzzli() {//move()
+    public boolean aktualizujPolozeniePuzzli() {//move()
         if (puzzelWTrakciePrzesuwania) {
             if(obecnyLewyRogPuzzla_X != ostatecznyLewyRogPuzzla_X){
                 if(ostatecznyLewyRogPuzzla_X>obecnyLewyRogPuzzla_X){
@@ -207,15 +208,35 @@ public class Wytnij extends View {
             }else {
                 obrazki[poprzedniPustyY][poprzedniPustyX] = dotknietyID;
                 puzzelWTrakciePrzesuwania = false;
+               if( sprawdzCzyWygrana()){
+                   return true;
+
+
+               }
             }
         }
+        return false;
+    }
+
+    private boolean sprawdzCzyWygrana() {
+
+        for (int i = 0; i < iloscPodzialow; i++) {
+            for (int j = 0; j < iloscPodzialow; j++){
+                if(obrazki[i][j]!=wygraneUlozenie[i][j]){
+                    Log.d("WYGRANA", "obrazki["+i +"]["+j+ "]="+ obrazki[i][j]+", wygraneUlozenie="+ wygraneUlozenie[i][j]);
+                    return false;
+                }
+            }
+        }
+    return true;
+        //finish -> powrot do poprzedniej aktywnosci
     }
 
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
-        if (event.getAction() == MotionEvent.ACTION_UP && puzzelWTrakciePrzesuwania == false) {
+        if (event.getAction() == MotionEvent.ACTION_UP && !puzzelWTrakciePrzesuwania) {
             int wspX = (int) ((event.getX() - przesunieciePlanszyX) / szerokoscObrazka);
             int wspY = (int) ((event.getY() - przesunieciePlanszyY) / wysokoscObrazka); //wys->szer
 
@@ -272,14 +293,8 @@ public class Wytnij extends View {
                 puzzelWTrakciePrzesuwania = true;
                 obrazki[dotknietyY][dotknietyX] = -1;
             }
-
-
-
-
         }
-
-
-        return true;
+     return true;
     }
 
 

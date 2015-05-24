@@ -2,6 +2,7 @@ package de.duckout.projektpuzzle;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -23,6 +24,7 @@ import java.util.Random;
 
 
 public class Ukladanka extends Activity {
+    private static final int REQ_CODE = 123;
     private int poziom_trudnosci;
     private int nr_zdjecia;
     private Wytnij widokUkladanki;
@@ -32,8 +34,6 @@ public class Ukladanka extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Plansza_WyborObrazka.ukladanka_start = true;
-        //setContentView(R.layout.activity_ukladanka);
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             poziom_trudnosci = extras.getInt("POZIOM_TRUDNOSCI");
@@ -41,20 +41,22 @@ public class Ukladanka extends Activity {
 
 
         }
-       // nr_zdjecia=4;
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         this.widokUkladanki = new Wytnij(this, poziom_trudnosci + 1,nr_zdjecia);
-//        Wytnij w
         handler = new Handler(Looper.getMainLooper());
         refresh = new Runnable() {
             @Override
             public void run() {
-                widokUkladanki.aktualizujPolozeniePuzzli();
+                if (widokUkladanki.aktualizujPolozeniePuzzli()) {
+                    Intent resultIntent = new Intent();
+                    resultIntent.putExtra("wygrana", true);
+                    setResult(REQ_CODE, resultIntent);
+                    finish();
+                }
                 widokUkladanki.invalidate();
             }
         };
         setContentView(widokUkladanki);
-
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -68,18 +70,8 @@ public class Ukladanka extends Activity {
                 }
             }
         }).start();
-        //  Log.d("nasz poziom trudnosci to :", " "+String.valueOf(poziom_trudnosci));
-        //Toast.makeText(getApplicationContext(), "poziom trudnosci to: " + String.valueOf(poziom_trudnosci), Toast.LENGTH_SHORT).show();
+
     }
 
- /*   public void koniec_gry(View view) {
-        Plansza_WyborObrazka.ukladanka_koniec = true;
-        finish();
-        startActivity(getIntent());
-        Toast.makeText(getApplicationContext(), "KONIEC", Toast.LENGTH_SHORT).show();
-    }
-
-
-}*/
 
 }

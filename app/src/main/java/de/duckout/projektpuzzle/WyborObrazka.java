@@ -11,6 +11,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -19,6 +20,7 @@ import java.util.ArrayList;
  */
 public class WyborObrazka extends Activity{
 
+    private static final int REQUEST_WYNIK = 123;
     ListView listaObrazkow;
     ArrayList<Integer> obrazkiId;
     private Button button_start;
@@ -82,7 +84,7 @@ public class WyborObrazka extends Activity{
                     private String rodzajRuchu;
                     private float ostatnioDotknietyX = 0;//wsporzedne dotniecia ekranu
                     private float ostatnioDotknietyY = 0;
-                    private float przesuniecieX = 0;//wartosci przesuniec
+                    private float przesuniecieX = 0;
                     private float przesuniecieY = 0;
                     private int aktywnyWskaznikId = BRAK_WSKAZNIKA_DOTYKAJACEGO_EKRAN;
 
@@ -158,8 +160,6 @@ public class WyborObrazka extends Activity{
                         if ((rodzajRuchu.equals(PRZESUNIECIE) && wspolczynnikSkali != 1) || rodzajRuchu.equals(ZOOM)) {
                             ukladankaLayout.setTranslationX(przesuniecieX);
                             ukladankaLayout.setTranslationY(przesuniecieY);
-                            float przemieszczenieZ = (float) Math.sqrt(przesuniecieX*przesuniecieX+przesuniecieY*przesuniecieY);
-                        //    ukladankaLayout.setTranslationZ(przemieszczenieZ);
                             ukladankaLayout.setScaleY(wspolczynnikSkali);
                             ukladankaLayout.setScaleX(wspolczynnikSkali);
                             ukladankaLayout.invalidate();
@@ -181,14 +181,25 @@ public class WyborObrazka extends Activity{
 
         intent.putExtra("OBRAZEK", Plansza_WyborObrazka.nr_zdjecia);
         intent.putExtra("POZIOM_TRUDNOSCI", Plansza_WyborObrazka.poziom_trudnosci);
-        startActivity(intent);
+        startActivityForResult(intent, REQUEST_WYNIK);
 
+    }
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_WYNIK && data != null) {
+            boolean wygrana = data.getBooleanExtra("wygrana", false);
+            if(wygrana) {
+                Toast.makeText(getApplicationContext(), "GRATULACJE! poprawnie ułożony obrazek", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
 
 
     private class MojScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
-        private float MIN_ZOOM = 0.9f;
+        private float MIN_ZOOM = 1f;
         private float MAX_ZOOM = 2.0f;
         @Override//kiedy nastepuje Zoom'ing
         public boolean onScale(ScaleGestureDetector detector) {
