@@ -1,34 +1,17 @@
 package de.duckout.projektpuzzle;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Parcelable;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
 import android.view.Window;
-import android.widget.Toast;
-
-import java.util.ArrayList;
-import java.util.Random;
-
 
 public class Ukladanka extends Activity {
     private static final int REQ_CODE = 123;
     private int poziom_trudnosci;
     private int nr_zdjecia;
-    private Wytnij widokUkladanki;
+    private Gra widokGry;
     private Handler handler;
     private Runnable refresh;
 
@@ -43,27 +26,27 @@ public class Ukladanka extends Activity {
 
         }
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        this.widokUkladanki = new Wytnij(this, poziom_trudnosci + 1,nr_zdjecia);
+        this.widokGry = new Gra(this, poziom_trudnosci + 1,nr_zdjecia);
         handler = new Handler(Looper.getMainLooper());
         refresh = new Runnable() {
             @Override
             public void run() {
-                if (widokUkladanki.aktualizujPolozeniePuzzli()) {
+                if (widokGry.aktualizujPolozeniePuzzli()) {
                     Intent resultIntent = new Intent();
                     resultIntent.putExtra("wygrana", true);
                     setResult(REQ_CODE, resultIntent);
                     finish();
                 }
-                widokUkladanki.invalidate();
+                widokGry.invalidate();
             }
         };
-        setContentView(widokUkladanki);
+        setContentView(widokGry);
         new Thread(new Runnable() {
             @Override
             public void run() {
                 while(true) {
                     try {
-                        Thread.sleep(5);
+                        Thread.sleep(3);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -73,8 +56,4 @@ public class Ukladanka extends Activity {
         }).start();
 
     }
-
-
-
-
 }

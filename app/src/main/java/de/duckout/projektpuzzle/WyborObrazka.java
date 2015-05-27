@@ -21,11 +21,10 @@ import java.util.ArrayList;
 public class WyborObrazka extends Activity{
 
     private static final int REQUEST_WYNIK = 123;
-    ListView listaObrazkow;
-    ArrayList<Integer> obrazkiId;
-    private Button button_start;
+    private ListView listaObrazkow;
+    private ArrayList<Integer> obrazkiId;
 
-    RelativeLayout ukladankaLayout;
+    private RelativeLayout ukladankaLayout;
     private ScaleGestureDetector scaleGestureDetector;// -> do skalowania obrazka
     private float wspolczynnikSkali = 1;
 
@@ -61,17 +60,6 @@ public class WyborObrazka extends Activity{
                 startActivity(getIntent());
             }
         });
-    /*    lista.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-
-                                             @Override
-                                             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                                                 Log.d("onLongClick", "yeah");
-                                                 Toast.makeText(getApplicationContext(), "LONG CLICK, ", Toast.LENGTH_SHORT).show();
-                                                 return true;
-                                             }
-                                         }
-        );
-*/
         ukladankaLayout = (RelativeLayout)
                 findViewById(R.id.relativeLayout);
 
@@ -158,6 +146,9 @@ public class WyborObrazka extends Activity{
                         }
                         //odswiezamy jedynie gdy skalujemy lub przeuwamy sie
                         if ((rodzajRuchu.equals(PRZESUNIECIE) && wspolczynnikSkali != 1) || rodzajRuchu.equals(ZOOM)) {
+                            Log.d("translation", "przesuniecieX"+ przesuniecieX);
+                            Log.d("translation", "przesuniecieY"+ przesuniecieY);
+                            Log.d("translation", "wspolczynnikSkali"+ wspolczynnikSkali);
                             ukladankaLayout.setTranslationX(przesuniecieX);
                             ukladankaLayout.setTranslationY(przesuniecieY);
                             ukladankaLayout.setScaleY(wspolczynnikSkali);
@@ -201,6 +192,7 @@ public class WyborObrazka extends Activity{
     private class MojScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         private float MIN_ZOOM = 1f;
         private float MAX_ZOOM = 2.0f;
+
         @Override//kiedy nastepuje Zoom'ing
         public boolean onScale(ScaleGestureDetector detector) {
             wspolczynnikSkali *= detector.getScaleFactor();
