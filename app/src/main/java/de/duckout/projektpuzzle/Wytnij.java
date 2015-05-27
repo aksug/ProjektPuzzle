@@ -18,72 +18,57 @@ import java.util.Random;
  */
 public class Wytnij extends View {
 
-    ArrayList<Bitmap> tab;
-    int[][] wygraneUlozenie;
+    private ArrayList<Bitmap> bitmapy;
+    private Bitmap bitmapOrginalna;
+    private int wymiarBitmapy;
 
-    public int wysokoscEkranu;
-    public int szerokoscEkranu;
-    public int[][] obrazki;
-    public int iloscPodzialow;
-    public int szerokoscObrazka;
-    public int wysokoscObrazka;
+    private int[][] wygraneUlozenie;
+    private int[][] obrazki;
 
-    Bitmap bitmapOrginalna;
-    int dotknietyY;
-    int dotknietyX;
+    private int wymiarObrazka;
+    private int przesunieciePlanszyX;
+    private int przesunieciePlanszyY;
 
+    private int iloscPodzialow;
+    private int nr_zdjecia;
 
-    int poprzedniPustyX;
-    int poprzedniPustyY;
-    int nr_zdjecia;
-    int przesunieciePlanszyX;
-    int przesunieciePlanszyY;
-
-    boolean puzzelWTrakciePrzesuwania;
+    private boolean puzzelWTrakciePrzesuwania;
     private float obecnyLewyRogPuzzla_X;
     private float obecnyGornyRogPuzzla_Y;
     private float ostatecznyLewyRogPuzzla_X;
     private float ostatecznyGoryRogPuzzla_Y;
+    private int poprzedniPustyX;
+    private int poprzedniPustyY;
     private int dotknietyID;
-    private int wymiarBitmapy;
-    Context context;
+
 
     public Wytnij(Context context, int iloscPodzialow, int nr_zdjecia) {
         super(context);
-this.context = context;
 
         this.iloscPodzialow = iloscPodzialow;
         this.nr_zdjecia = nr_zdjecia;
         obrazki = new int[iloscPodzialow][iloscPodzialow];
-
         setFocusableInTouchMode(true);
         setFocusable(true);
-
-        dotknietyY = poprzedniPustyY;
-        dotknietyX = poprzedniPustyX;
-
-
     }
 
     @Override
     protected void onSizeChanged(int s, int w, int staras, int staraw) {
         super.onSizeChanged(s, w, staras, staraw);
-        szerokoscEkranu = s;
-        wysokoscEkranu = w;
-
+        int szerokoscEkranu = s;
+        int wysokoscEkranu = w;
 
         if (wysokoscEkranu > szerokoscEkranu) {
             wymiarBitmapy = szerokoscEkranu - 50;
         } else wymiarBitmapy = wysokoscEkranu - 50;
 
-        szerokoscObrazka = wymiarBitmapy / iloscPodzialow;
-        wysokoscObrazka = wymiarBitmapy / iloscPodzialow;
+        wymiarObrazka = wymiarBitmapy / iloscPodzialow;
     }
 
 
     public void podzielObrazki(int nr_zdjecia) {
         wygraneUlozenie = new int[iloscPodzialow][iloscPodzialow];
-        tab = new ArrayList<>();
+        bitmapy = new ArrayList<>();
 
         //tutaj przycinam sobie orginalny obrazek. Jesli jest wiekszy niz ekran to go docinamy na wymiarBitmapy,wymiarBitmapy
         bitmapOrginalna = BitmapFactory.decodeResource(getResources(), R.drawable.pobrane + nr_zdjecia);
@@ -93,9 +78,9 @@ this.context = context;
         //wykrajamu z duzego obrazu orginalnego male puzzelki j*pp i i*qq oznaczaja ich wys i szerokosc
         for (int i = 0; i < iloscPodzialow; i++) {
             for (int j = 0; j < iloscPodzialow; j++) {
-                tab.add(Bitmap.createBitmap(bitmapOrginalna, j * pp, i * qq, bitmapOrginalna.getWidth() / iloscPodzialow, bitmapOrginalna.getHeight() / iloscPodzialow));
-                obrazki[i][j] = tab.size() - 1; // od razu w odpowiednim miejscu wrzucamy indeks wlasnie dodanego puzzla do arraylisty
-                wygraneUlozenie[i][j]= tab.size() - 1;
+                bitmapy.add(Bitmap.createBitmap(bitmapOrginalna, j * pp, i * qq, bitmapOrginalna.getWidth() / iloscPodzialow, bitmapOrginalna.getHeight() / iloscPodzialow));
+                obrazki[i][j] = bitmapy.size() - 1; // od razu w odpowiednim miejscu wrzucamy indeks wlasnie dodanego puzzla do arraylisty
+                wygraneUlozenie[i][j] = bitmapy.size() - 1;
             }
         }
         obrazki[iloscPodzialow - 1][iloscPodzialow - 1] = -1;  //ostatniego obrazka nie chcemy rysowac tylko zznaczyc ze jest pusty czyli jako indeks wstawiamy -1
@@ -117,44 +102,33 @@ this.context = context;
                 if (a - 1 >= 0) { //czy nasz puzzel z lewej strony nie wychodzi poza tablice , jesli nie to wez lewego i zamien z pustym
                     obrazki[a][b] = obrazki[a - 1][b];
                     obrazki[a - 1][b] = -1;
-                    zapiszWspolrzednePustego(a - 1, b);
                     a--; //zaznaczamy ze teraz pusty jest o indeksie a,b ale a przesunelo sie nam w lewo(b czyli nr wieersza ten sam)
                 } else if (wylosowany1 == 0 && b - 1 >= 0) { //jezeli z lewej wychodzimy poxza tab to wez mien wiersz(jak 0 to w dol a "a" zostaje to samo)
                     obrazki[a][b] = obrazki[a][b - 1];
                     obrazki[a][b - 1] = -1;
                     b--;
-                    zapiszWspolrzednePustego(a, b - 1);
                 } else if (wylosowany1 == 1 && b + 1 < iloscPodzialow) {
                     obrazki[a][b] = obrazki[a][b + 1];
                     obrazki[a][b + 1] = -1;
                     b++;
-                    zapiszWspolrzednePustego(a, b + 1);
                 }
             } else {
                 if (a + 1 < iloscPodzialow) { //w prawo chcemy go przesunac i analogicznie
                     obrazki[a][b] = obrazki[a + 1][b];
                     obrazki[a + 1][b] = -1;
                     a++;
-                    zapiszWspolrzednePustego(a + 1, b);
                 } else if (wylosowany1 == 0 && b - 1 >= 0) {
                     obrazki[a][b] = obrazki[a][b - 1];
                     obrazki[a][b - 1] = -1;
                     b--;
-                    zapiszWspolrzednePustego(a, b - 1);
                 } else if (wylosowany1 == 1 && b + 1 > iloscPodzialow) {
                     obrazki[a][b] = obrazki[a][b + 1];
                     obrazki[a][b + 1] = -1;
                     b++;
-                    zapiszWspolrzednePustego(a, b + 1);
                 }
             }
             i++;
         }
-    }
-
-    private void zapiszWspolrzednePustego(int pierwszaWsp, int drugaWsp) {
-        poprzedniPustyX = drugaWsp;
-        poprzedniPustyY = pierwszaWsp;
     }
 
 
@@ -162,14 +136,14 @@ this.context = context;
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        if(tab == null)
+        if (bitmapy == null) {
             podzielObrazki(nr_zdjecia);
+            przesunieciePlanszyX = canvas.getWidth() / 2 - bitmapOrginalna.getWidth() / 2;
+            przesunieciePlanszyY = canvas.getHeight() / 2 - bitmapOrginalna.getHeight() / 2;
+        }
         canvas.drawColor(Color.BLACK); //rysujemy tlo
 
         /***************************RYSOWANIE PUZZLI*****************************************************/
-        przesunieciePlanszyX = canvas.getWidth() / 2 - bitmapOrginalna.getWidth() / 2;
-        przesunieciePlanszyY = canvas.getHeight() / 2 - bitmapOrginalna.getHeight() / 2;
-
         Paint paint = new Paint();
         paint.setFilterBitmap(true);
 
@@ -178,41 +152,36 @@ this.context = context;
             for (int j = 0; j < iloscPodzialow; j++)
                 if (obrazki[i][j] > -1) {
 
-                        canvas.drawBitmap(tab.get(obrazki[i][j]), j * wysokoscObrazka + przesunieciePlanszyX, i * wysokoscObrazka + przesunieciePlanszyY, paint);
-                }else{
-            if(puzzelWTrakciePrzesuwania  ) {//TODO
-                canvas.drawBitmap(tab.get(dotknietyID), obecnyLewyRogPuzzla_X, obecnyGornyRogPuzzla_Y, paint);
-            }
-
-            }
-
+                    canvas.drawBitmap(bitmapy.get(obrazki[i][j]), j * wymiarObrazka + przesunieciePlanszyX, i * wymiarObrazka + przesunieciePlanszyY, paint);
+                } else {
+                    if (puzzelWTrakciePrzesuwania) {
+                        canvas.drawBitmap(bitmapy.get(dotknietyID), obecnyLewyRogPuzzla_X, obecnyGornyRogPuzzla_Y, paint);
+                    }
+                }
         }
-
     }
 
 
     public boolean aktualizujPolozeniePuzzli() {//move()
         if (puzzelWTrakciePrzesuwania) {
-            if(obecnyLewyRogPuzzla_X != ostatecznyLewyRogPuzzla_X){
-                if(ostatecznyLewyRogPuzzla_X>obecnyLewyRogPuzzla_X){
+            if (obecnyLewyRogPuzzla_X != ostatecznyLewyRogPuzzla_X) {
+                if (ostatecznyLewyRogPuzzla_X > obecnyLewyRogPuzzla_X) {
                     obecnyLewyRogPuzzla_X++;
-                }else{
+                } else {
                     obecnyLewyRogPuzzla_X--;
                 }
-            }else if(obecnyGornyRogPuzzla_Y != ostatecznyGoryRogPuzzla_Y){
-                if(ostatecznyGoryRogPuzzla_Y>obecnyGornyRogPuzzla_Y){
+            } else if (obecnyGornyRogPuzzla_Y != ostatecznyGoryRogPuzzla_Y) {
+                if (ostatecznyGoryRogPuzzla_Y > obecnyGornyRogPuzzla_Y) {
                     obecnyGornyRogPuzzla_Y++;
-                }else{
+                } else {
                     obecnyGornyRogPuzzla_Y--;
                 }
-            }else {
+            } else {
                 obrazki[poprzedniPustyY][poprzedniPustyX] = dotknietyID;
                 puzzelWTrakciePrzesuwania = false;
-               if( sprawdzCzyWygrana()){
-                   return true;
-
-
-               }
+                if (sprawdzCzyWygrana()) {
+                    return true;
+                }
             }
         }
         return false;
@@ -221,15 +190,13 @@ this.context = context;
     private boolean sprawdzCzyWygrana() {
 
         for (int i = 0; i < iloscPodzialow; i++) {
-            for (int j = 0; j < iloscPodzialow; j++){
-                if(obrazki[i][j]!=wygraneUlozenie[i][j]){
-                    Log.d("WYGRANA", "obrazki["+i +"]["+j+ "]="+ obrazki[i][j]+", wygraneUlozenie="+ wygraneUlozenie[i][j]);
+            for (int j = 0; j < iloscPodzialow; j++) {
+                if (obrazki[i][j] != wygraneUlozenie[i][j]) {
                     return false;
                 }
             }
         }
-    return true;
-        //finish -> powrot do poprzedniej aktywnosci
+        return true;
     }
 
 
@@ -237,24 +204,23 @@ this.context = context;
     public boolean onTouchEvent(MotionEvent event) {
 
         if (event.getAction() == MotionEvent.ACTION_UP && !puzzelWTrakciePrzesuwania) {
-            int wspX = (int) ((event.getX() - przesunieciePlanszyX) / szerokoscObrazka);
-            int wspY = (int) ((event.getY() - przesunieciePlanszyY) / wysokoscObrazka); //wys->szer
+            int wspX = (int) ((event.getX() - przesunieciePlanszyX) / wymiarObrazka);
+            int wspY = (int) ((event.getY() - przesunieciePlanszyY) / wymiarObrazka); //wys->szer
 
-            obecnyLewyRogPuzzla_X = wspX *  szerokoscObrazka+ przesunieciePlanszyX;
-            obecnyGornyRogPuzzla_Y = wspY *wysokoscObrazka+przesunieciePlanszyY;
+            obecnyLewyRogPuzzla_X = wspX * wymiarObrazka + przesunieciePlanszyX;
+            obecnyGornyRogPuzzla_Y = wspY * wymiarObrazka + przesunieciePlanszyY;
 
-            dotknietyX = wspX;
-            dotknietyY = wspY;
-            if((event.getX() - przesunieciePlanszyX) < 0 || (event.getX() - przesunieciePlanszyX) > wymiarBitmapy) {
-                Log.d("OUT", "WSCHOD_ZACHOD");
-            }
-            else if( (event.getY() - przesunieciePlanszyY) < 0 || (event.getY() - przesunieciePlanszyY) > wymiarBitmapy) {
-                Log.d("OUT", "POLNOC_POLUDNIE");
-            }
-            else if (wspY - 1 >= 0 && obrazki[wspY - 1][wspX] == -1) {
+            int dotknietyX = wspX;
+            int dotknietyY = wspY;
 
-                ostatecznyLewyRogPuzzla_X =  wspX *  szerokoscObrazka+ przesunieciePlanszyX;
-                ostatecznyGoryRogPuzzla_Y = (wspY -1)*  wysokoscObrazka+ przesunieciePlanszyY;
+            if ((event.getX() - przesunieciePlanszyX) < 0 || (event.getX() - przesunieciePlanszyX) > wymiarBitmapy) {
+                // zabezpieczenie przed kliknieciem na pole poza obrazkiem
+            } else if ((event.getY() - przesunieciePlanszyY) < 0 || (event.getY() - przesunieciePlanszyY) > wymiarBitmapy) {
+                // zabezpieczenie przed kliknieciem na pole poza obrazkiem
+            } else if (wspY - 1 >= 0 && obrazki[wspY - 1][wspX] == -1) {
+
+                ostatecznyLewyRogPuzzla_X = wspX * wymiarObrazka + przesunieciePlanszyX;
+                ostatecznyGoryRogPuzzla_Y = (wspY - 1) * wymiarObrazka + przesunieciePlanszyY;
 
                 poprzedniPustyX = wspX;
                 poprzedniPustyY = wspY - 1;
@@ -265,8 +231,8 @@ this.context = context;
 
             } else if (wspX - 1 >= 0 && obrazki[wspY][wspX - 1] == -1) {
 
-                ostatecznyLewyRogPuzzla_X =  (wspX - 1)*  szerokoscObrazka+ przesunieciePlanszyX;
-                ostatecznyGoryRogPuzzla_Y = wspY*  wysokoscObrazka+ przesunieciePlanszyY;
+                ostatecznyLewyRogPuzzla_X = (wspX - 1) * wymiarObrazka + przesunieciePlanszyX;
+                ostatecznyGoryRogPuzzla_Y = wspY * wymiarObrazka + przesunieciePlanszyY;
 
                 poprzedniPustyX = wspX - 1;
                 poprzedniPustyY = wspY;
@@ -275,8 +241,8 @@ this.context = context;
                 puzzelWTrakciePrzesuwania = true;
 
             } else if (wspX + 1 < iloscPodzialow && obrazki[wspY][wspX + 1] == -1) {
-                ostatecznyLewyRogPuzzla_X =  (wspX + 1)*  szerokoscObrazka+ przesunieciePlanszyX;
-                ostatecznyGoryRogPuzzla_Y = wspY*  wysokoscObrazka+ przesunieciePlanszyY;
+                ostatecznyLewyRogPuzzla_X = (wspX + 1) * wymiarObrazka + przesunieciePlanszyX;
+                ostatecznyGoryRogPuzzla_Y = wspY * wymiarObrazka + przesunieciePlanszyY;
 
                 poprzedniPustyX = wspX + 1;
                 poprzedniPustyY = wspY;
@@ -284,8 +250,8 @@ this.context = context;
                 puzzelWTrakciePrzesuwania = true;
                 obrazki[dotknietyY][dotknietyX] = -1;
             } else if (wspY + 1 < iloscPodzialow && obrazki[wspY + 1][wspX] == -1) {
-                ostatecznyLewyRogPuzzla_X =  wspX *  szerokoscObrazka+ przesunieciePlanszyX;
-                ostatecznyGoryRogPuzzla_Y = (wspY + 1)*  wysokoscObrazka+ przesunieciePlanszyY;
+                ostatecznyLewyRogPuzzla_X = wspX * wymiarObrazka + przesunieciePlanszyX;
+                ostatecznyGoryRogPuzzla_Y = (wspY + 1) * wymiarObrazka + przesunieciePlanszyY;
 
                 poprzedniPustyX = wspX;
                 poprzedniPustyY = wspY + 1;
@@ -294,10 +260,8 @@ this.context = context;
                 obrazki[dotknietyY][dotknietyX] = -1;
             }
         }
-     return true;
+        return true;
     }
-
-
 }
 
 
